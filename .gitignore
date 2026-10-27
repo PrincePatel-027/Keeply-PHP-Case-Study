@@ -25,3 +25,8 @@ Thumbs.db
 
 /.kiro
 /storage/framework/local-pilot.json
+
+# archify validation reports (contain local paths)
+docs/archify/*.browser-check.json
+docs/archify/*.delivery.json
+docs/archify/*.finalize*.json

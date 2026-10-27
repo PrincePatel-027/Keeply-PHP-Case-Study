@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Keeply system architecture",
+    "output": "docs/archify/architecture.html",
+    "quality_profile": "showcase",
+    "locale": "en",
+    "repository": {
+      "url": "https://github.com/PrincePatel-027/Keeply-PHP-Case-Study.git",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "d83888da66459f0297d840329141a4c2c8537e82"
+    }
+  },
+  "components": [
+    { "id": "owner", "type": "external", "label": "Product owner", "sublabel": "web browser", "pos": [40, 40], "size": [120, 60],
+      "sources": [{ "path": "routes/web.php", "line": 49, "end_line": 95, "label": "authenticated routes" }] },
+    { "id": "app", "type": "backend", "label": "Keeply web app", "sublabel": "Laravel 12 · Blade", "tag": "policies + CSP", "pos": [260, 38], "size": [160, 64],
+      "sources": [
+        { "path": "routes/web.php", "line": 49, "end_line": 95, "label": "controllers" },
+        { "path": "bootstrap/app.php", "line": 14, "end_line": 16, "label": "security headers" },
+        { "path": "app/Policies/WorkspacePolicy.php", "line": 10, "end_line": 15, "label": "membership check" }
+      ] },
+    { "id": "db", "type": "database", "label": "SQLite database", "sublabel": "14 tables", "pos": [530, 40], "size": [140, 60],
+      "sources": [{ "path": ".env.example", "line": 23, "end_line": 23, "label": "DB_CONNECTION" }] },
+    { "id": "worker", "type": "backend", "label": "Queue worker", "sublabel": "queue:work", "pos": [780, 40], "size": [140, 60],
+      "sources": [
+        { "path": "app/Jobs/SendReminderEmail.php", "line": 36, "end_line": 60, "label": "send + stamp sent_at" },
+        { "path": "scripts/start-local-pilot.ps1", "line": 125, "end_line": 125, "label": "worker command" }
+      ] },
+    { "id": "mail", "type": "external", "label": "Mail transport", "sublabel": "log locally", "pos": [1050, 40], "size": [130, 60],
+      "sources": [
+        { "path": ".env.example", "line": 50, "end_line": 50, "label": "MAIL_MAILER" },
+        { "path": "app/Mail/FollowUpReminderMail.php", "line": 1, "end_line": 29 }
+      ] },
+    { "id": "storage", "type": "database", "label": "Private file storage", "sublabel": "storage/app/private", "pos": [260, 200], "size": [160, 60],
+      "sources": [
+        { "path": "config/filesystems.php", "line": 33, "end_line": 40, "label": "local disk root" },
+        { "path": "app/Http/Controllers/DocumentController.php", "line": 18, "end_line": 55, "label": "evidence upload" },
+        { "path": "app/Services/ActionPackPdfService.php", "line": 17, "end_line": 70, "label": "PDF write" }
+      ] },
+    { "id": "scheduler", "type": "backend", "label": "Scheduler", "sublabel": "schedule:work", "pos": [530, 200], "size": [140, 60],
+      "sources": [
+        { "path": "routes/console.php", "line": 11, "end_line": 17, "label": "schedule" },
+        { "path": "app/Console/Commands/DispatchReminderEmails.php", "line": 16, "end_line": 40, "label": "claim + dispatch" }
+      ] },
+    { "id": "queue", "type": "messagebus", "label": "Database queue", "sublabel": "emails, default", "pos": [780, 200], "size": [140, 60],
+      "sources": [
+        { "path": ".env.example", "line": 38, "end_line": 38, "label": "QUEUE_CONNECTION" },
+        { "path": "app/Jobs/SendReminderEmail.php", "line": 13, "end_line": 35, "label": "unique queued job" }
+      ] }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "Local pilot on 127.0.0.1", "wraps": ["app", "db", "worker", "storage", "scheduler", "queue"] }
+  ],
+  "connections": [
+    { "id": "owner-http", "from": "owner", "to": "app", "label": "HTTP :8000", "variant": "emphasis" },
+    { "id": "app-sql", "from": "app", "to": "db", "label": "Eloquent SQL" },
+    { "id": "app-files", "from": "app", "to": "storage", "label": "uploads, PDFs" },
+    { "id": "scheduler-claim", "from": "scheduler", "to": "db", "label": "claim due" },
+    { "id": "scheduler-enqueue", "from": "scheduler", "to": "queue", "label": "enqueue job", "variant": "dashed" },
+    { "id": "queue-worker", "from": "queue", "to": "worker", "label": "emails" },
+    { "id": "worker-sent", "from": "worker", "to": "db", "label": "set sent_at" },
+    { "id": "worker-mail", "from": "worker", "to": "mail", "label": "reminder email" }
+  ],
+  "cards": [
+    { "dot": "rose", "title": "Security", "items": ["Every record is checked against workspace membership by policies", "CSP and no-store headers on every response", "Uploads verified by content, stored outside public/"] },
+    { "dot": "emerald", "title": "Domain services", "items": ["CoverageCalculator: active, expired or unknown", "EvidenceChecklistService and immutable assessment snapshots", "Action Pack PDFs rendered by Dompdf with remote and PHP disabled"] },
+    { "dot": "amber", "title": "Background work", "items": ["reminders:dispatch runs every minute", "accounts:purge-deleted runs daily at 02:30 after a 30-day window"] }
+  ]
+}
