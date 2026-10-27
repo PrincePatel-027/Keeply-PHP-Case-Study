@@ -1,0 +1,31 @@
+flowchart TB
+    Browser["Browser<br/>(Blade HTML + CSS)"]
+
+    subgraph App["Keeply Laravel application"]
+        direction TB
+        MW["Middleware<br/>auth, verified, CSRF, throttle,<br/>SecurityHeaders"]
+        RT["Routes (routes/web.php)"]
+        CT["Controllers (12)"]
+        FR["Form Requests (9)<br/>validation"]
+        PL["Policies (6)<br/>workspace membership"]
+        SV["Domain Services (12)<br/>CoverageCalculator, AssessmentSnapshotService,<br/>EvidenceChecklistService, ActionPackBuilder,<br/>ActionPackPdfService, ReminderService, ..."]
+        MD["Eloquent Models (12)"]
+        JB["Queue Job<br/>SendReminderEmail"]
+        CMD["Console Commands<br/>reminders:dispatch, accounts:purge-deleted"]
+    end
+
+    DB[("Relational database<br/>SQLite / MySQL")]
+    FS[("Private storage<br/>storage/app/private")]
+    MAIL["Mail transport<br/>(log locally, SMTP in production)"]
+    SCH["Scheduler<br/>schedule:work"]
+    WRK["Queue worker<br/>queue:work"]
+
+    Browser --> MW --> RT --> CT
+    CT --> FR
+    CT --> PL
+    CT --> SV
+    SV --> MD --> DB
+    SV --> FS
+    SCH --> CMD --> SV
+    CMD --> JB
+    WRK --> JB --> MAIL

@@ -1,0 +1,59 @@
+classDiagram
+    direction TB
+    class CoverageCalculator {
+        +calculate(Item, ResolutionCase, today) array
+        -position(kind, purchaseDate, duration, ...) CoveragePosition
+    }
+    class CoveragePosition {
+        <<value object>>
+        +kind
+        +state : active|expired|unknown
+        +deadline
+        +evaluatedAt
+        +evaluationSource
+        +sourceFacts
+        +missingFacts
+        +daysDifference
+    }
+    class AssessmentSnapshotService {
+        +create(ResolutionCase, userId) CaseAssessment
+    }
+    class EvidenceChecklistService {
+        +build(ResolutionCase, CaseAssessment) array
+    }
+    class DynamicFieldService {
+        +validationRules(Category) array
+        +persist(Item, Category, values) void
+    }
+    class CaseStatusService {
+        -TRANSITIONS
+        +allowedTransitions(ResolutionCase) array
+        +transition(ResolutionCase, nextStatus) void
+    }
+    class ReminderService {
+        +syncFromEvent(CaseEvent, userId) void
+    }
+    class ActionPackBuilder {
+        +defaultLetter(case, assessment, user) string
+        +build(case, assessment, documents, letter, user) array
+    }
+    class ActionPackPdfService {
+        +create(pack) ActionPack
+        -snapshot(pack, version, generatedAt) array
+        -render(snapshot) string
+    }
+    class ResolutionOutcomeService {
+        +record(ResolutionCase, data, userId) ResolutionCase
+    }
+    class AccountExportService {
+        +build(User) array
+    }
+    class AccountDeletionService {
+        +request(User) void
+        +purge(User) void
+    }
+
+    CoverageCalculator ..> CoveragePosition : creates
+    AssessmentSnapshotService ..> CoverageCalculator : injected
+    ActionPackBuilder ..> EvidenceChecklistService : injected
+    ActionPackPdfService ..> ActionPackBuilder : renders its pack

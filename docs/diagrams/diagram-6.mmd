@@ -1,0 +1,18 @@
+stateDiagram-v2
+    [*] --> active : case opened
+    draft --> active
+    draft --> closed_unresolved
+    active --> waiting_on_business
+    active --> action_required
+    active --> closed_unresolved
+    waiting_on_business --> active
+    waiting_on_business --> action_required
+    waiting_on_business --> closed_unresolved
+    action_required --> active
+    action_required --> waiting_on_business
+    action_required --> closed_unresolved
+    active --> resolved : outcome repaired / replaced / refunded / other
+    waiting_on_business --> resolved : outcome recorded
+    action_required --> resolved : outcome recorded
+    resolved --> [*]
+    closed_unresolved --> [*]

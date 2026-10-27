@@ -1,0 +1,19 @@
+flowchart LR
+    subgraph PC["Windows computer (single user)"]
+        BR["Web browser<br/>http://127.0.0.1:8000"]
+        subgraph Pilot["start-local-pilot.ps1"]
+            WEB["php artisan serve<br/>bound to 127.0.0.1"]
+            QW["php artisan queue:work"]
+            SW["php artisan schedule:work"]
+        end
+        SQL[("database/database.sqlite")]
+        PRIV[("storage/app/private")]
+        LOG["storage/logs/laravel.log<br/>(log mailer)"]
+    end
+    BR <--> WEB
+    WEB --> SQL
+    WEB --> PRIV
+    SW --> SQL
+    SW --> QW
+    QW --> SQL
+    QW --> LOG

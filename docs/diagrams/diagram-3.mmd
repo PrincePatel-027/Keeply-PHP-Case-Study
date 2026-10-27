@@ -1,0 +1,24 @@
+flowchart TD
+    A([Start]) --> B[Register and verify email]
+    B --> C[Personal workspace created automatically]
+    C --> D[Add product: choose category, fill generated form]
+    D --> E[Attach receipt / warranty / photos]
+    E --> F{Product has a problem?}
+    F -- No --> Z1([Product stays on record])
+    F -- Yes --> G[Open resolution case]
+    G --> H[See return and warranty position]
+    H --> I[Save assessment snapshot]
+    I --> J[Review evidence checklist]
+    J --> K{Evidence missing?}
+    K -- Yes --> E
+    K -- No --> L[Contact the business, log timeline entries]
+    L --> M{Promise of follow-up?}
+    M -- Yes --> N[Reminder created, shown on Today and emailed when due]
+    N --> L
+    M -- No --> O[Build Action Pack preview, edit letter]
+    O --> P[Generate private PDF version]
+    P --> Q[Send pack to the business yourself]
+    Q --> R{Resolved?}
+    R -- Not yet --> L
+    R -- Yes / gave up --> S[Record final outcome]
+    S --> Z([Case closed with full history])

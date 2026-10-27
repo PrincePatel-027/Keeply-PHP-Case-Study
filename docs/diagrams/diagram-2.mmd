@@ -1,0 +1,46 @@
+flowchart LR
+    U(["👤 Registered user"])
+    G(["👤 Visitor"])
+    S(["⚙ Scheduler / Queue"])
+
+    subgraph Keeply["Keeply system boundary"]
+        UC1(["Register and verify email"])
+        UC2(["Log in / reset password"])
+        UC3(["Add product (dynamic form)"])
+        UC4(["Attach private evidence"])
+        UC5(["Open resolution case"])
+        UC6(["Change case status"])
+        UC7(["Add / edit timeline entry"])
+        UC8(["Complete follow-up reminder"])
+        UC9(["View coverage position"])
+        UC10(["Save assessment snapshot"])
+        UC11(["Review evidence checklist"])
+        UC12(["Preview Action Pack"])
+        UC13(["Generate and download Action Pack PDF"])
+        UC14(["Record final outcome"])
+        UC15(["Export data / delete account"])
+        UC16(["Send due reminder emails"])
+        UC17(["Purge accounts after 30 days"])
+    end
+
+    G --> UC1
+    G --> UC2
+    U --> UC3
+    U --> UC4
+    U --> UC5
+    U --> UC6
+    U --> UC7
+    U --> UC8
+    U --> UC9
+    U --> UC10
+    U --> UC11
+    U --> UC12
+    U --> UC13
+    U --> UC14
+    U --> UC15
+    S --> UC16
+    S --> UC17
+    UC13 -. includes .-> UC12
+    UC12 -. requires .-> UC10
+    UC11 -. requires .-> UC10
+    UC7 -. may create .-> UC8

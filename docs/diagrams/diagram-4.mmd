@@ -1,0 +1,121 @@
+classDiagram
+    direction LR
+    class User {
+        +id
+        +name
+        +email
+        +email_verified_at
+        +deleted_at
+        +workspaces()
+    }
+    class Workspace {
+        +id
+        +name
+        +currency
+        +country_code
+        +members()
+        +items()
+        +documents()
+    }
+    class Category {
+        +key
+        +name
+        +is_active
+        +fields()
+    }
+    class CategoryField {
+        +key
+        +label
+        +data_type
+        +is_required
+        +validation_rules
+        +options
+    }
+    class Item {
+        +name
+        +brand
+        +model
+        +serial_number «encrypted»
+        +purchase_date
+        +purchase_price_minor
+        +return_days
+        +warranty_months
+        +values()
+        +documents()
+        +cases()
+    }
+    class ItemValue {
+        +value_text
+        +value_integer
+        +value_decimal
+        +value_boolean
+        +value_date
+    }
+    class Document {
+        +type
+        +original_name
+        +storage_path
+        +mime_type
+        +size_bytes
+        +sha256
+    }
+    class ResolutionCase {
+        +title
+        +problem_summary
+        +failure_date
+        +desired_outcome
+        +status
+        +priority
+        +resolution_type
+        +resolution_value_minor
+        +events()
+        +assessments()
+        +actionPacks()
+        +reminders()
+    }
+    class CaseEvent {
+        +TYPES
+        +CHANNELS
+        +event_type
+        +occurred_at
+        +summary
+        +reference
+        +promised_follow_up_at
+        +expense_minor
+    }
+    class Reminder {
+        +due_at
+        +queued_at
+        +sent_at
+        +completed_at
+        +cancelled_at
+        +pending()
+    }
+    class CaseAssessment {
+        +version
+        +assessed_at
+        +snapshot «immutable»
+    }
+    class ActionPack {
+        +version
+        +facts_snapshot
+        +events_snapshot
+        +evidence_manifest
+        +letter_body «immutable»
+    }
+
+    User "1..*" -- "1..*" Workspace : workspace_members
+    Workspace "1" *-- "0..*" Item
+    Workspace "1" *-- "0..*" Document
+    Category "1" *-- "1..*" CategoryField
+    Category "1" -- "0..*" Item
+    Item "1" *-- "0..*" ItemValue
+    CategoryField "1" -- "0..*" ItemValue
+    Item "0..*" -- "0..*" Document : item_documents(purpose)
+    Item "1" *-- "0..*" ResolutionCase
+    ResolutionCase "1" *-- "0..*" CaseEvent
+    CaseEvent "1" -- "0..1" Reminder
+    ResolutionCase "1" *-- "0..*" CaseAssessment
+    ResolutionCase "1" *-- "0..*" ActionPack
+    CaseAssessment "1" -- "0..*" ActionPack
+    ActionPack "1" -- "1" Document : pdf

@@ -1,0 +1,25 @@
+sequenceDiagram
+    participant SCH as Scheduler (every minute)
+    participant CMD as reminders:dispatch
+    participant DB as Database
+    participant Q as Database queue
+    participant W as Queue worker
+    participant J as SendReminderEmail (unique job)
+    participant M as Mailer
+
+    SCH->>CMD: run (withoutOverlapping)
+    CMD->>DB: select due reminders: not sent, not queued, not completed, not cancelled
+    loop each due reminder
+        CMD->>DB: atomically set queued_at (claim)
+        CMD->>Q: dispatch job(reminder id)
+    end
+    W->>Q: take job
+    W->>J: handle()
+    J->>DB: reload reminder
+    alt already sent, completed or cancelled
+        J-->>W: exit without sending
+    else still pending
+        J->>M: send FollowUpReminderMail
+        J->>DB: set sent_at
+    end
+    Note over J,DB: if the job finally fails, queued_at is released so a later pass can retry

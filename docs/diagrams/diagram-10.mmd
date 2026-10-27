@@ -1,0 +1,134 @@
+erDiagram
+    users ||--o{ workspace_members : "belongs to"
+    workspaces ||--o{ workspace_members : has
+    workspaces ||--o{ items : owns
+    workspaces ||--o{ documents : owns
+    categories ||--o{ category_fields : defines
+    categories ||--o{ items : classifies
+    items ||--o{ item_values : has
+    category_fields ||--o{ item_values : "typed by"
+    items ||--o{ item_documents : links
+    documents ||--o{ item_documents : links
+    items ||--o{ resolution_cases : "has problems"
+    resolution_cases ||--o{ case_events : chronology
+    case_events ||--o| reminders : "promise creates"
+    resolution_cases ||--o{ case_assessments : "versions"
+    resolution_cases ||--o{ action_packs : "versions"
+    case_assessments ||--o{ action_packs : "basis of"
+    documents ||--o| action_packs : "pdf file"
+
+    users {
+        bigint id PK
+        string name
+        string email UK
+        timestamp email_verified_at
+        string password "bcrypt hash"
+        timestamp deleted_at "30-day window"
+    }
+    workspaces {
+        bigint id PK
+        string name
+        char currency "INR"
+        char country_code "IN"
+    }
+    workspace_members {
+        bigint workspace_id PK,FK
+        bigint user_id PK,FK
+        string role "owner"
+    }
+    categories {
+        bigint id PK
+        string key UK
+        string name
+        boolean is_active
+    }
+    category_fields {
+        bigint id PK
+        bigint category_id FK
+        string key
+        string data_type
+        boolean is_required
+        json validation_rules
+        json options
+    }
+    items {
+        bigint id PK
+        bigint workspace_id FK
+        bigint category_id FK
+        string name
+        text serial_number "encrypted"
+        date purchase_date
+        bigint purchase_price_minor
+        smallint return_days
+        smallint warranty_months
+    }
+    item_values {
+        bigint id PK
+        bigint item_id FK
+        bigint category_field_id FK
+        text value_text
+        bigint value_integer
+        decimal value_decimal
+        boolean value_boolean
+        date value_date
+    }
+    documents {
+        bigint id PK
+        bigint workspace_id FK
+        string type
+        string storage_path UK
+        string mime_type
+        bigint size_bytes
+        char sha256
+    }
+    item_documents {
+        bigint item_id PK,FK
+        bigint document_id PK,FK
+        string purpose
+    }
+    resolution_cases {
+        bigint id PK
+        bigint workspace_id FK
+        bigint item_id FK
+        string title
+        date failure_date
+        string desired_outcome
+        string status
+        string resolution_type
+        bigint resolution_value_minor
+    }
+    case_events {
+        bigint id PK
+        bigint resolution_case_id FK
+        string event_type
+        timestamp occurred_at
+        string reference
+        timestamp promised_follow_up_at
+        bigint expense_minor
+    }
+    reminders {
+        bigint id PK
+        bigint case_event_id FK,UK
+        timestamp due_at
+        timestamp queued_at
+        timestamp sent_at
+        timestamp completed_at
+        timestamp cancelled_at
+    }
+    case_assessments {
+        bigint id PK
+        bigint resolution_case_id FK
+        smallint version
+        json snapshot
+    }
+    action_packs {
+        bigint id PK
+        bigint resolution_case_id FK
+        bigint case_assessment_id FK
+        bigint pdf_document_id FK
+        smallint version
+        json facts_snapshot
+        json events_snapshot
+        json evidence_manifest
+        text letter_body
+    }

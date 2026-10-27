@@ -1,0 +1,31 @@
+sequenceDiagram
+    actor U as User
+    participant C as ActionPackController
+    participant R as PreviewActionPackRequest
+    participant P as ResolutionCasePolicy
+    participant B as ActionPackBuilder
+    participant S as ActionPackPdfService
+    participant D as Dompdf
+    participant FS as Private storage
+    participant DB as Database
+
+    U->>C: POST /cases/{case}/action-packs
+    C->>R: validate assessment_id, document_ids, letter_body
+    R-->>C: validated input
+    C->>P: authorize('view', case)
+    P-->>C: allowed (member of workspace)
+    C->>DB: find assessment within this case
+    C->>DB: find documents within this case's product
+    C->>B: build(case, assessment, documents, letter, user)
+    B-->>C: pack (facts, chronology, checklist)
+    C->>S: create(pack)
+    S->>DB: BEGIN, lock case row, next version = max + 1
+    S->>D: render frozen snapshot to A4 PDF (remote and PHP disabled)
+    D-->>S: PDF bytes
+    S->>FS: put action-packs/{workspace}/{uuid}.pdf
+    S->>DB: insert documents row (sha256, size, mime)
+    S->>DB: insert action_packs row (snapshots, letter)
+    S->>DB: COMMIT
+    Note over S,FS: on failure the stored file is deleted and the transaction rolls back
+    S-->>C: ActionPack vN
+    C-->>U: redirect to case, "Action Pack vN generated privately"
